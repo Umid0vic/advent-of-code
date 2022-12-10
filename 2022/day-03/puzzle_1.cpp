@@ -1,4 +1,4 @@
-// Problem: https://adventofcode.com/2022/day/3#part2
+// Problem: https://adventofcode.com/2022/day/3#part1
 
 #include <iostream>
 #include <string>
@@ -10,10 +10,8 @@ using namespace std;
 int main() {
 
   int sumP = 0;
-
   ifstream file("game.txt");
   string line;
-  int ifs = 0;
 
   while (getline(file, line)) {
     int len = line.length();
@@ -23,7 +21,7 @@ int main() {
     // Find the shared item
     for (auto c : word1) {
       if (word2.find(c) != string::npos) {
-        int(c) <= 'Z' ? sumP += int(c)-'A'+27 : sumP += int(c)-'a'+1;
+        sumP += (isupper(c) ? c - 'A' + 27 : c - 'a' + 1);
         break;
       }
     }
