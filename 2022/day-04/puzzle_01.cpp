@@ -22,18 +22,30 @@ Range parse_range(const string range_str) {
 }
 
 // Count the number of pairs where one range fully contains the other
-int fully_contained(const vector<pair<Range, Range>> pairs) {
+int fully_contained(const vector<pair<Range, Range>>& pairs) {
     int count = 0;
     for (auto pair : pairs) {
       // Check if one range fully contains the other
-      if ((pair.first.start <= pair.second.start && 
-          pair.first.end >= pair.second.end) ||
-          (pair.second.start <= pair.first.start && 
-          pair.second.end >= pair.first.end)) {
+      if ((pair.first.start   <= pair.second.start  && pair.first.end   >= pair.second.end) ||
+          (pair.second.start  <= pair.first.start   && pair.second.end  >= pair.first.end)) {
         count++;
       }
     }
     return count;
+}
+
+// Count the number of pairs that overlap at all
+int overlapped(const vector<pair<Range, Range>>& pairs){
+  int count = 0;
+  for (auto pair : pairs) {
+    if ((pair.first.start >= pair.second.start && pair.first.start  <= pair.second.end)   ||
+        (pair.first.end   >= pair.second.start && pair.first.end    <= pair.second.end)   ||
+        (pair.second.start >= pair.first.start && pair.second.start  <= pair.first.end)   ||
+        (pair.second.end   >= pair.first.start && pair.second.end    <= pair.first.end))  {
+          count++;
+    }
+  }
+  return count;
 }
 
 int main() {
@@ -48,9 +60,9 @@ int main() {
         auto range2 = parse_range(line.substr(comma_pos + 1));
         pairs.emplace_back(range1, range2);
     }
-
-    // Test the function
+    // solution for puzzle 1 
     cout << fully_contained(pairs) << endl;
-
+    // solution for puzzle 2 
+    cout << overlapped(pairs) << endl;
     return 0;
 }
