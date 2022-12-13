@@ -24,12 +24,12 @@ Range parse_range(const string range_str) {
 // Count the number of pairs where one range fully contains the other
 int fully_contained(const vector<pair<Range, Range>> pairs) {
     int count = 0;
-    for (int i = 0; i < pairs.size(); i++) {
+    for (auto pair : pairs) {
       // Check if one range fully contains the other
-      if ((pairs[i].first.start <= pairs[i].second.start && 
-          pairs[i].first.end >= pairs[i].second.end) ||
-          (pairs[i].second.start <= pairs[i].first.start && 
-          pairs[i].second.end >= pairs[i].first.end)) {
+      if ((pair.first.start <= pair.second.start && 
+          pair.first.end >= pair.second.end) ||
+          (pair.second.start <= pair.first.start && 
+          pair.second.end >= pair.first.end)) {
         count++;
       }
     }
