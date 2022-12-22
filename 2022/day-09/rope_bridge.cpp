@@ -31,7 +31,7 @@ map<pair<int, int>, char> makeMove(const vector<pair<char, int>>& moves, positio
   map<pair<int, int>, char> visitedPositions;
   for (const auto& [dir, steps] : moves) {
     for (int i = 0; i < steps; i++) {
-
+      // Update the head position based on the direction of the move
       if (dir == 'U') {
         head.y++;
       } else if (dir == 'D') {
@@ -77,13 +77,14 @@ map<pair<int, int>, char> makeMove(const vector<pair<char, int>>& moves, positio
           }
         }
       }
+      // Add the current tail position to the map of visited positions
       visitedPositions[{tail.x, tail.y}] = '#';
     }
   }
   visitedPositions[{0, 0}] = 's';
   return visitedPositions;
 }
-
+ 
 
 int main() {
 
@@ -102,8 +103,10 @@ int main() {
     moves.push_back(move);
   }
 
+  // Calculate the visited positions
   map<pair<int, int>, char> visitedPositions = makeMove(moves, head, tail);
 
+  // Determine the minimum and maximum x and y coordinates of the visited positions
   int minX = 0, maxX = 0, minY = 0, maxY = 0;
   for (const auto& [pos, c] : visitedPositions) {
     minX = min(minX, pos.first);
@@ -112,6 +115,7 @@ int main() {
     maxY = max(maxY, pos.second);
   }
 
+  // Print the grid to the console
   for (int y = maxY; y >= minY; y--) {
     for (int x = minX; x <= maxX; x++) {
       if (visitedPositions.count({x, y}) == 0) {
