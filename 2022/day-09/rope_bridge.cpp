@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <map>
+#include <algorithm>
 
 using namespace std;
 
@@ -13,12 +15,22 @@ struct position {
   position(int xx, int yy) : x(xx), y(yy) {}
 };
 
-vector<position> makeMove(const vector<pair<char, int>>& moves, position& head, position& tail) {
-  int stepsCount = 0;
-  vector<position> visitedPositions;
+/**
+ * Calculates the positions that the tail visits while moving based on the provided moves of the head.
+ * @param moves A vector of pairs representing the moves of the head. 
+ * Each pair consists of a character representing the direction (U, D, L, or R) 
+ * and an integer representing the number of steps in that direction.
+ * @param head A reference to the position of the head.
+ * @param tail A reference to the position of the tail.
+ * @return A map of pairs of integers representing the positions that the tail visited, 
+ * with the characters '#' and 's' indicating the positions visited by the tail and the starting position, respectively.
+ */
+
+map<pair<int, int>, char> makeMove(const vector<pair<char, int>>& moves, position& head, position& tail) {
+
+  map<pair<int, int>, char> visitedPositions;
   for (const auto& [dir, steps] : moves) {
     for (int i = 0; i < steps; i++) {
-      cout << dir << " " << steps << endl;
 
       if (dir == 'U') {
         head.y++;
@@ -64,25 +76,11 @@ vector<position> makeMove(const vector<pair<char, int>>& moves, position& head, 
             tail.y--;
           }
         }
-      } else {
-        cout << "digonallyAdjacent " << endl;
       }
-      // Check if the current position of the tail is already in the visitedPositions vector
-      bool isUnique = true;
-      for (const auto& pos : visitedPositions) {
-        if (pos.x == tail.x && pos.y == tail.y) {
-          isUnique = false;
-          break;
-        }
-      }
-      // If the current position is unique, add it to the visitedPositions vector
-      if (isUnique) {
-        visitedPositions.push_back(tail);
-      }
-      cout << "head {" << head.x << " , " << head.y << "}" << endl;
-      cout << "tail {" << tail.x << " , " << tail.y << "}" << endl;
+      visitedPositions[{tail.x, tail.y}] = '#';
     }
   }
+  visitedPositions[{0, 0}] = 's';
   return visitedPositions;
 }
 
@@ -104,9 +102,25 @@ int main() {
     moves.push_back(move);
   }
 
-  vector<position> visitedPositions = makeMove(moves, head, tail);
+  map<pair<int, int>, char> visitedPositions = makeMove(moves, head, tail);
 
-  cout << visitedPositions.size();
+  int minX = 0, maxX = 0, minY = 0, maxY = 0;
+  for (const auto& [pos, c] : visitedPositions) {
+    minX = min(minX, pos.first);
+    maxX = max(maxX, pos.first);
+    minY = min(minY, pos.second);
+    maxY = max(maxY, pos.second);
+  }
 
+  for (int y = maxY; y >= minY; y--) {
+    for (int x = minX; x <= maxX; x++) {
+      if (visitedPositions.count({x, y}) == 0) {
+        cout << '.';
+      } else {
+        cout << visitedPositions[{x, y}];
+      }
+    }
+    cout << endl;
+  }
   return 0;
 }
