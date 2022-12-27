@@ -1,3 +1,4 @@
+// Puzzle from https://adventofcode.com/2022/day/7
 
 #include <iostream>
 #include <string>
@@ -71,6 +72,26 @@ int sumDirectorySizes(File& dir, int& totalSize) {
     return totalSize;
 }
 
+// Recursive function to find the directory with a size closest to spaceToFreeUp
+// dir: the current directory being considered
+// spaceToFreeUp: the amount of space that needs to be freed up
+// dirToRemove: a pointer to a File struct that will be updated to point to
+// the directory with the size closest to spaceToFreeUp
+void removeDir(File& dir, int spaceToFreeUp, File*& dirToRemove) {
+    int dirSize = calculateDirectorySize(dir);
+    if (dirSize >= spaceToFreeUp && (dirToRemove == nullptr || 
+        abs(dirSize - spaceToFreeUp) < abs(calculateDirectorySize(*dirToRemove) - spaceToFreeUp))) {
+        cout << "log: found dir " << dir.name << " with size " << dirSize << endl;
+        dirToRemove = &dir;
+    }
+    for (auto& [name, child] : dir.children) {
+        if (child.size == -1) {
+            removeDir(child, spaceToFreeUp, dirToRemove);
+        }
+    }
+}
+
+
 // Function to print the file structure of a directory and its children
 void printFileStructure(const File& file, int level) {
     // Print the file name and type
@@ -90,39 +111,40 @@ void printFileStructure(const File& file, int level) {
     }
 }
 
+
 int main() {
 
-  // Create the root directory
-  File root;
-  root.name = "/";
-  root.size = -1;
-  root.parent = nullptr;
-  File* pCurrentDir = &root;
-  
-  ifstream input("input.txt");
-  string line;
+    // Create the root directory
+    File root;
+    root.name = "/";
+    root.size = -1;
+    root.parent = nullptr;
+    File* pCurrentDir = &root;
+    
+    ifstream input("input.txt");
+    string line;
 
     while (getline(input, line)) {
         // Change directory
         if (line.substr(0, 4) == "$ cd") {
-        string command = line.substr(5);
+            string command = line.substr(5);
 
-        if (command == "/") {
-            // Set the current directory to the root directory
-            pCurrentDir = &root;
-        } else if (command == "..") {
-            /// Set the current directory to the parent directory if it exists
-            if (pCurrentDir->parent) pCurrentDir = pCurrentDir->parent;
-            else cout << "Error: Already at root directory" << endl;
-        } else {
-            // Set the current directory to the subdirectory if it exists
-            string subdir_name = line.substr(5);
-            if (pCurrentDir->children.count(subdir_name)) {
-            pCurrentDir = &pCurrentDir->children[subdir_name];
+            if (command == "/") {
+                // Set the current directory to the root directory
+                pCurrentDir = &root;
+            } else if (command == "..") {
+                /// Set the current directory to the parent directory if it exists
+                if (pCurrentDir->parent) pCurrentDir = pCurrentDir->parent;
+                else cout << "Error: Already at root directory" << endl;
             } else {
-            cout << "Error: No such directory" << endl;
+                // Set the current directory to the subdirectory if it exists
+                string subdir_name = line.substr(5);
+                if (pCurrentDir->children.count(subdir_name)) {
+                pCurrentDir = &pCurrentDir->children[subdir_name];
+                } else {
+                cout << "Error: No such directory" << endl;
+                }
             }
-        }
         } else if (line != "$ ls") {
             createFile(pCurrentDir, line);
         }
@@ -133,5 +155,31 @@ int main() {
     int sum = sumDirectorySizes(root, sum);
     cout << "Sum of sizes of all directories with at least 100000 bytes: " << sum << endl;
 
+    // The total disk space available in the file system is 70000000.
+    // To run the update, we need unused space of at least 30000000.
+    // So find a directory, if deleted can free up enough space to run the update
+
+    // Calculate the total used space
+    int totalUsedSpace = 70000000 - calculateDirectorySize(root);
+    // Calculate the amount of space that needs to be freed up
+    int spaceToFreeUp = abs(30000000 - totalUsedSpace);
+    if (spaceToFreeUp > 0) {
+        File* dirToRemove = nullptr;
+        removeDir(root, spaceToFreeUp, dirToRemove);
+        if (dirToRemove != nullptr) {
+            cout << "Found dir to remove: " << dirToRemove->name << endl;
+            // Delete the found directory
+            dirToRemove->parent->children.erase(dirToRemove->name);
+            cout << "Deleted directory " << dirToRemove->name << " to free up space." << endl;
+        } else {
+            cout << "Could not find a directory with enough size to delete." << endl;
+        }
+    } else {
+        cout << "There is already enough space to run the update." << endl;
+    }
+
+    // Print the file system structure
+    //cout << "File system structure after update:" << endl;
+    //printFileStructure(root, 0);
     return 0;
 }
